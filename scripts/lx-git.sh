@@ -308,3 +308,33 @@ if [ $OPTIND -eq 1 ]; then
 fi
 
 exit 0
+
+
+
+1. Rename the Local Branch
+
+If you are on the branch you want to rename:
+
+git branch -m new-branch-name
+
+If you are not on the branch, use:
+
+git branch -m old-branch-name new-branch-name
+
+2. Delete the Old Remote Branch
+
+Push the new branch and remove the old one from the remote repository:
+
+git push origin --delete old-branch-name
+
+3. Push the New Branch to Remote
+
+git push origin new-branch-name
+
+4. Reset the Upstream Branch (if needed)
+
+To make sure the renamed local branch tracks the remote branch:
+
+git branch --unset-upstream
+git branch --set-upstream-to=origin/new-branch-name
+

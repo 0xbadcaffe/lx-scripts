@@ -1,0 +1,31 @@
+poky|distro|Yocto Project reference distribution|https://git.yoctoproject.org/poky|standalone
+openbmc|distro|OpenBMC|https://github.com/openbmc/openbmc.git|standalone
+yoe|distro|Yoe Embedded Linux|https://github.com/YoeDistro/yoe-distro.git|standalone
+openstlinux|manifest|ST OpenSTLinux manifest|https://github.com/STMicroelectronics/oe-manifest.git|manifest
+openstlinux-layer|layer|ST OpenSTLinux distro layer|https://github.com/STMicroelectronics/meta-st-openstlinux.git|layer
+petalinux-manifest|manifest|AMD/Xilinx Yocto manifests|https://github.com/Xilinx/yocto-manifests.git|sdk
+petalinux-layer|layer|AMD/Xilinx PetaLinux distro layer|https://github.com/Xilinx/meta-petalinux.git|layer
+xilinx|layer|AMD/Xilinx BSP layers|https://github.com/Xilinx/meta-xilinx.git|layer
+xilinx-tools|layer|AMD/Xilinx tools layer|https://github.com/Xilinx/meta-xilinx-tools.git|layer
+nxp-imx|manifest|NXP i.MX BSP manifest|https://github.com/nxp-imx/imx-manifest.git|manifest
+nxp-meta-imx|layer|NXP i.MX BSP layer|https://github.com/nxp-imx/meta-imx.git|layer
+ti-arago|layer|TI Arago distribution|https://github.com/TexasInstruments/meta-arago.git|vendor
+ti-sdk|layer|TI Processor SDK layer|https://github.com/TexasInstruments/meta-tisdk.git|vendor
+ti-meta|layer|TI BSP layer|https://git.yoctoproject.org/meta-ti|layer
+kontron-smarc|distro|Kontron SMARC SAM67 workspace|https://github.com/kontron/yocto-smarc-sam67.git|standalone
+kontron-smarc-layer|layer|Kontron SMARC SAM67 layer|https://github.com/kontron/meta-smarc-sam67.git|layer
+enclustra-amd|layer|Enclustra AMD/Zynq BSP|https://github.com/enclustra/meta-enclustra-amd.git|layer
+enclustra-socfpga|layer|Enclustra Intel SoC FPGA BSP|https://github.com/enclustra/meta-enclustra-socfpga.git|layer
+enclustra-mpfs|layer|Enclustra PolarFire SoC BSP|https://github.com/enclustra/meta-enclustra-mpfs.git|layer
+analog-adi|layer|Analog Devices BSP layers|https://github.com/analogdevicesinc/meta-adi.git|layer
+analog-lnxdsp|manifest|Analog Devices SC5xx manifest|https://github.com/analogdevicesinc/lnxdsp-repo-manifest.git|manifest
+renesas-rz|layer|Renesas RZ BSP|https://github.com/renesas-rz/meta-renesas.git|layer
+variscite|manifest|Variscite BSP manifest|https://github.com/varigit/variscite-bsp-platform.git|manifest
+raspberrypi|layer|Raspberry Pi BSP|https://github.com/agherzan/meta-raspberrypi.git|layer
+beagleboard|layer|BeagleBoard BSP|https://github.com/beagleboard/meta-beagleboard.git|layer
+meta-openembedded|layer|OpenEmbedded community layers|https://github.com/openembedded/meta-openembedded.git|layer
+meta-arm|layer|Arm Yocto/OE layers|https://git.yoctoproject.org/meta-arm|layer
+meta-virtualization|layer|Virtualization/container layer|https://git.yoctoproject.org/meta-virtualization|layer
+meta-security|layer|Security layers|https://git.yoctoproject.org/meta-security|layer
+meta-clang|layer|Clang/LLVM layer|https://github.com/kraj/meta-clang.git|layer
+meta-qt6|layer|Qt 6 layer|https://code.qt.io/yocto/meta-qt6.git|layer

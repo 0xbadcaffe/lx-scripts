@@ -17,8 +17,8 @@ JOBS=8
 usage() {
 cat <<'EOF'
 Usage:
-  init-yocto-world.sh --list
-  init-yocto-world.sh --id NAME [options]
+  lx-init-yocto-world.sh --list
+  lx-init-yocto-world.sh --id NAME [options]
 
 Default: validate and print the initialization command.
 Use --sync to repo-init/repo-sync manifest workspaces.
@@ -50,18 +50,24 @@ EOF
 
 while (($#)); do
   case "$1" in
+    --id|--root|--machine|--distro|--project|--build-dir|--branch|--manifest|-j|--jobs)
+      [[ $# -ge 2 && -n $2 && $2 != -* ]] || {
+        echo "ERROR: $1 requires a value." >&2; exit 7;
+      } ;;
+  esac
+  case "$1" in
     --list) LIST=1; shift ;;
-    --id) ID="${2:?}"; shift 2 ;;
-    --root) ROOT="${2:?}"; shift 2 ;;
-    --machine) MACHINE="${2:?}"; shift 2 ;;
-    --distro) DISTRO_NAME="${2:?}"; shift 2 ;;
-    --project) PROJECT="${2:?}"; shift 2 ;;
-    --build-dir) BUILD_DIR="${2:?}"; shift 2 ;;
-    --branch) BRANCH="${2:?}"; shift 2 ;;
-    --manifest) MANIFEST="${2:?}"; shift 2 ;;
+    --id) ID="$2"; shift 2 ;;
+    --root) ROOT="$2"; shift 2 ;;
+    --machine) MACHINE="$2"; shift 2 ;;
+    --distro) DISTRO_NAME="$2"; shift 2 ;;
+    --project) PROJECT="$2"; shift 2 ;;
+    --build-dir) BUILD_DIR="$2"; shift 2 ;;
+    --branch) BRANCH="$2"; shift 2 ;;
+    --manifest) MANIFEST="$2"; shift 2 ;;
     --sync) SYNC=1; shift ;;
     --apply) APPLY=1; shift ;;
-    -j|--jobs) JOBS="${2:?}"; shift 2 ;;
+    -j|--jobs) JOBS="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 7 ;;
   esac
@@ -69,51 +75,20 @@ done
 
 [[ "$JOBS" =~ ^[1-9][0-9]*$ ]] || { echo "Invalid --jobs" >&2; exit 7; }
 
-CATALOG=$(cat <<'EOF'
-poky|standalone|Yocto Project reference distribution
-openbmc|standalone|OpenBMC
-yoe|standalone|Yoe Distro
-openstlinux|manifest|ST OpenSTLinux
-openstlinux-layer|layer|ST OpenSTLinux layer
-petalinux-manifest|sdk|AMD/Xilinx PetaLinux public manifests
-petalinux-layer|layer|AMD/Xilinx PetaLinux layer
-xilinx|layer|AMD/Xilinx BSP layers
-xilinx-tools|layer|AMD/Xilinx tools layer
-nxp-imx|manifest|NXP i.MX BSP
-nxp-meta-imx|layer|NXP i.MX layer
-ti-arago|vendor|TI Arago layer
-ti-sdk|vendor|TI Processor SDK layer
-ti-meta|layer|TI BSP layer
-kontron-smarc|standalone|Kontron SMARC workspace
-kontron-smarc-layer|layer|Kontron SMARC layer
-enclustra-amd|layer|Enclustra AMD/Xilinx layer
-enclustra-socfpga|layer|Enclustra Intel SoC FPGA layer
-enclustra-mpfs|layer|Enclustra PolarFire layer
-analog-adi|layer|Analog Devices meta-adi layer
-analog-lnxdsp|manifest|Analog Devices SC5xx workspace
-renesas-rz|layer|Renesas RZ layer
-variscite|manifest|Variscite BSP
-raspberrypi|layer|Raspberry Pi BSP layer
-beagleboard|layer|BeagleBoard BSP layer
-meta-openembedded|layer|OpenEmbedded community layers
-meta-arm|layer|Arm layers
-meta-virtualization|layer|Virtualization layer
-meta-security|layer|Security layers
-meta-clang|layer|Clang/LLVM layer
-meta-qt6|layer|Qt6 layer
-EOF
-)
+CATALOG="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/data/yocto-repositories.txt"
 
 if ((LIST)); then
   printf '%-23s %-11s %s\n' ID TYPE DESCRIPTION
-  while IFS='|' read -r a b c; do printf '%-23s %-11s %s\n' "$a" "$b" "$c"; done <<<"$CATALOG"
+  while IFS='|' read -r id _ description _ init_type; do
+    printf '%-23s %-11s %s\n' "$id" "$init_type" "$description"
+  done < "$CATALOG"
   exit 0
 fi
 
 [[ -n "$ID" ]] || { echo "ERROR: --id required; use --list." >&2; exit 7; }
-line="$(awk -F'|' -v id="$ID" '$1==id{print;exit}' <<<"$CATALOG")"
+line="$(awk -F'|' -v id="$ID" '$1==id{print;exit}' "$CATALOG")"
 [[ -n "$line" ]] || { echo "ERROR: unknown ID '$ID'." >&2; exit 7; }
-IFS='|' read -r _ TYPE DESC <<<"$line"
+IFS='|' read -r _ _ _ URL _ <<<"$line"
 
 need_cmd() { command -v "$1" >/dev/null 2>&1 || { echo "ERROR: missing prerequisite '$1'." >&2; exit 2; }; }
 need_common() { for x in bash git python3 file; do need_cmd "$x"; done; }
@@ -148,7 +123,7 @@ launch() {
     exit 0
   fi
   echo "Entering initialized child shell. Type 'exit' to return."
-  exec bash --noprofile --norc -c "cd $(q "$wd"); set -e; $cmd; exec bash -i"
+  exec bash --noprofile --norc -c "set -e; cd $(q "$wd"); $cmd; exec bash -i"
 }
 
 sync_repo() {
@@ -169,9 +144,10 @@ sync_repo() {
     fi
     (cd "$ws" && "${args[@]}")
   fi
-  ((SYNC)) && (cd "$ws" && repo sync -j"$JOBS")
+  if ((SYNC)); then (cd "$ws" && repo sync -j"$JOBS"); fi
 }
 
+ROOT=$(realpath -m -- "$ROOT")
 need_common
 
 case "$ID" in
@@ -199,7 +175,7 @@ case "$ID" in
     need_cmd repo
     need_src "$ROOT/openstlinux" "Clone the ST oe-manifest first."
     ws="$ROOT/workspaces/openstlinux"
-    sync_repo "https://github.com/STMicroelectronics/oe-manifest.git" "$ws"
+    sync_repo "$URL" "$ws"
     need_file "$ws/layers/meta-st/scripts/envsetup.sh" "OpenSTLinux source sync is incomplete."
     need_arg "$MACHINE" "--machine" "Example: --machine stm32mp25-disco"
     distro="${DISTRO_NAME:-openstlinux-weston}"
@@ -213,7 +189,7 @@ case "$ID" in
       need_arg "$BRANCH" "--branch" "Example: --branch imx-linux-wrynose"
       need_arg "$MANIFEST" "--manifest" "Use the exact release XML from NXP."
     fi
-    sync_repo "https://github.com/nxp-imx/imx-manifest.git" "$ws"
+    sync_repo "$URL" "$ws"
     need_file "$ws/imx-setup-release.sh" "NXP source sync is incomplete."
     need_arg "$MACHINE" "--machine" "Example: --machine imx95evk"
     need_arg "$DISTRO_NAME" "--distro" "Example: --distro fsl-imx-xwayland"
@@ -225,7 +201,7 @@ case "$ID" in
     need_src "$ROOT/analog-lnxdsp" "Clone lnxdsp-repo-manifest first."
     ws="$ROOT/workspaces/analog-lnxdsp"
     [[ -n "$MANIFEST" ]] || MANIFEST="main.xml"
-    sync_repo "https://github.com/analogdevicesinc/lnxdsp-repo-manifest.git" "$ws" "main.xml"
+    sync_repo "$URL" "$ws" "main.xml"
     need_file "$ws/setup-environment" "ADI source sync is incomplete."
     need_arg "$MACHINE" "--machine" "Example: --machine adsp-sc598-som-ezkit"
     launch "$ws" "source ./setup-environment -m $(q "$MACHINE")"
@@ -237,7 +213,7 @@ case "$ID" in
     if ((SYNC)) && [[ ! -d "$ws/.repo" ]]; then
       need_arg "$BRANCH" "--branch" "Use the exact Variscite release branch."
     fi
-    sync_repo "https://github.com/varigit/variscite-bsp-platform.git" "$ws"
+    sync_repo "$URL" "$ws"
     need_file "$ws/setup-environment" "Variscite source sync is incomplete."
     need_arg "$MACHINE" "--machine" "Use a machine from the selected release."
     need_arg "$DISTRO_NAME" "--distro" "Use the distro from the selected release docs."

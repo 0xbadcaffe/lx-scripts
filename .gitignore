@@ -50,3 +50,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Local test caches and downloaded toolchains
+__pycache__/
+*.pyc
+/sdks/
+/SDKs/
+/downloads/

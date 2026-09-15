@@ -24,7 +24,7 @@ _lx_settings_setup() {
         *)   source_dir="." ;;
     esac
 
-    if ! root="$(CDPATH= builtin cd -- "$source_dir" && builtin pwd -P)"; then
+    if ! root="$(CDPATH='' builtin cd -- "$source_dir" && builtin pwd -P)"; then
         printf 'ERROR: Cannot determine the lx-scripts directory.\n' >&2
         return 1
     fi
